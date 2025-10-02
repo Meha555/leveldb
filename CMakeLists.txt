@@ -17,10 +17,13 @@ endif(NOT CMAKE_C_STANDARD)
 # C++ standard can be overridden when this is used as a sub-project.
 if(NOT CMAKE_CXX_STANDARD)
   # This project requires C++11.
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif(NOT CMAKE_CXX_STANDARD)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
 
 if (WIN32)
   set(LEVELDB_PLATFORM_NAME LEVELDB_PLATFORM_WINDOWS)
@@ -292,6 +295,7 @@ target_link_libraries(leveldbutil leveldb)
 
 if(LEVELDB_BUILD_TESTS)
   enable_testing()
+  find_package(GTest CONFIG REQUIRED)
 
   # Prevent overriding the parent project's compiler/linker settings on Windows.
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -299,16 +303,16 @@ if(LEVELDB_BUILD_TESTS)
   set(install_gmock OFF)
   set(build_gmock ON)
 
-  # This project is tested using GoogleTest.
-  add_subdirectory("third_party/googletest")
+#   # This project is tested using GoogleTest.
+#   add_subdirectory("third_party/googletest")
 
-  # GoogleTest triggers a missing field initializers warning.
-  if(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
-    set_property(TARGET gtest
-        APPEND PROPERTY COMPILE_OPTIONS -Wno-missing-field-initializers)
-    set_property(TARGET gmock
-        APPEND PROPERTY COMPILE_OPTIONS -Wno-missing-field-initializers)
-  endif(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
+#   # GoogleTest triggers a missing field initializers warning.
+#   if(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
+#     set_property(TARGET gtest
+#         APPEND PROPERTY COMPILE_OPTIONS -Wno-missing-field-initializers)
+#     set_property(TARGET gmock
+#         APPEND PROPERTY COMPILE_OPTIONS -Wno-missing-field-initializers)
+#   endif(LEVELDB_HAVE_NO_MISSING_FIELD_INITIALIZERS)
 
   add_executable(leveldb_tests "")
   target_sources(leveldb_tests
@@ -350,7 +354,7 @@ if(LEVELDB_BUILD_TESTS)
         "util/logging_test.cc"
     )
   endif(NOT BUILD_SHARED_LIBS)
-  target_link_libraries(leveldb_tests leveldb gmock gtest gtest_main)
+  target_link_libraries(leveldb_tests leveldb GTest::gmock GTest::gtest GTest::gtest_main)
   target_compile_definitions(leveldb_tests
     PRIVATE
       ${LEVELDB_PLATFORM_NAME}=1
@@ -376,7 +380,7 @@ if(LEVELDB_BUILD_TESTS)
 
         "${test_file}"
     )
-    target_link_libraries("${test_target_name}" leveldb gmock gtest)
+    target_link_libraries("${test_target_name}" leveldb GTest::gmock GTest::gtest)
     target_compile_definitions("${test_target_name}"
       PRIVATE
         ${LEVELDB_PLATFORM_NAME}=1
@@ -408,7 +412,8 @@ if(LEVELDB_BUILD_BENCHMARKS)
   # This project uses Google benchmark for benchmarking.
   set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
   set(BENCHMARK_ENABLE_EXCEPTIONS OFF CACHE BOOL "" FORCE)
-  add_subdirectory("third_party/benchmark")
+#   add_subdirectory("third_party/benchmark")
+  find_package(benchmark CONFIG REQUIRED)
 
   function(leveldb_benchmark bench_file)
     get_filename_component(bench_target_name "${bench_file}" NAME_WE)
@@ -424,7 +429,7 @@ if(LEVELDB_BUILD_BENCHMARKS)
 
         "${bench_file}"
     )
-    target_link_libraries("${bench_target_name}" leveldb gmock gtest benchmark)
+    target_link_libraries("${bench_target_name}" leveldb GTest::gmock GTest::gtest benchmark::benchmark)
     target_compile_definitions("${bench_target_name}"
       PRIVATE
         ${LEVELDB_PLATFORM_NAME}=1
