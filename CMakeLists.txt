@@ -354,7 +354,11 @@ if(LEVELDB_BUILD_TESTS)
         "util/logging_test.cc"
     )
   endif(NOT BUILD_SHARED_LIBS)
-  target_link_libraries(leveldb_tests leveldb GTest::gmock GTest::gtest GTest::gtest_main)
+  if (WIN32)
+    target_link_libraries(leveldb_tests leveldb GTest::gmock GTest::gtest GTest::gtest_main)
+  else()
+    target_link_libraries(leveldb_tests leveldb gmock gtest gtest_main)
+  endif()
   target_compile_definitions(leveldb_tests
     PRIVATE
       ${LEVELDB_PLATFORM_NAME}=1
@@ -380,7 +384,11 @@ if(LEVELDB_BUILD_TESTS)
 
         "${test_file}"
     )
-    target_link_libraries("${test_target_name}" leveldb GTest::gmock GTest::gtest)
+    if (WIN32)
+      target_link_libraries("${test_target_name}" leveldb GTest::gmock GTest::gtest)
+    else()
+      target_link_libraries("${test_target_name}" leveldb gmock gtest)
+    endif()
     target_compile_definitions("${test_target_name}"
       PRIVATE
         ${LEVELDB_PLATFORM_NAME}=1
@@ -429,7 +437,11 @@ if(LEVELDB_BUILD_BENCHMARKS)
 
         "${bench_file}"
     )
-    target_link_libraries("${bench_target_name}" leveldb GTest::gmock GTest::gtest benchmark::benchmark)
+    if (WIN32)
+      target_link_libraries("${bench_target_name}" leveldb GTest::gmock GTest::gtest benchmark::benchmark)
+    else()
+      target_link_libraries("${bench_target_name}" leveldb gmock gtest benchmark)
+    endif()
     target_compile_definitions("${bench_target_name}"
       PRIVATE
         ${LEVELDB_PLATFORM_NAME}=1
