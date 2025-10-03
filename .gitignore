@@ -9,3 +9,8 @@ out/
 
 .cache/
 .vscode/
+expdb/
+
+*.exe
+*.obj
+*.pdb
